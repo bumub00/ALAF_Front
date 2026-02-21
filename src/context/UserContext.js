@@ -1,45 +1,36 @@
-// src/context/UserContext.js
 import React, { createContext, useState, useEffect } from 'react';
 
+// 웹 전용 사용자(로그인) 전역 상태 관리 컨텍스트
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  // 로그인 상태 관리
+  // 현재 로그인된 사용자 정보 상태 (null: 비로그인)
   const [user, setUser] = useState(null); 
 
-  // -----------------------------------------------------------
-  // [초기화] 앱 실행(새로고침) 시 로컬 스토리지 확인
-  // -----------------------------------------------------------
+  // 앱 실행(새로고침) 시 로컬 스토리지 확인하여 로그인 세션 유지
   useEffect(() => {
-    // 로컬 스토리지에 토큰이 있는지 확인
     const token = localStorage.getItem('token');
-    // 로컬 스토리지에 유저 정보(JSON 문자열)가 저장되어 있는지 확인
     const storedUser = localStorage.getItem('user'); 
 
     if (token && storedUser) {
-      // 정보가 있으면 파싱해서 상태에 복구 (로그인 유지)
+      // 토큰과 유저 정보가 모두 존재하면 상태 복구
       setUser(JSON.parse(storedUser));
     }
   }, []);
 
-  // -----------------------------------------------------------
-  // [로그인 함수]
-  // WebLogin.jsx에서 백엔드 통신 성공 후 넘겨준 user 객체를 받아서 저장
-  // -----------------------------------------------------------
+  // 로그인 처리 (상태 업데이트 및 로컬 스토리지 영구 저장)
   const login = (userData) => {
     setUser(userData);
-    // 새로고침해도 정보가 날아가지 않도록 로컬 스토리지에 유저 정보 저장
+    // 새로고침해도 정보가 유지되도록 문자열로 변환하여 저장
     localStorage.setItem('user', JSON.stringify(userData)); 
     return true; 
   };
 
-  // -----------------------------------------------------------
-  // [로그아웃 함수]
-  // -----------------------------------------------------------
+  // 로그아웃 처리 (상태 초기화 및 저장된 토큰/정보 삭제)
   const logout = () => {
-    setUser(null); // 상태 초기화
-    localStorage.removeItem('token'); // 토큰 삭제
-    localStorage.removeItem('user');  // 유저 정보 삭제
+    setUser(null); 
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('user');  
   };
 
   return (

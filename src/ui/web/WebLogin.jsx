@@ -1,23 +1,20 @@
-// src/ui/web/WebLogin.jsx
 import React, { useState, useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const WebLogin = ({returnUrl}) => {
-  // -----------------------------------------------------------
-  // 1. Context 및 Hook 설정
-  // UserContext에서 'login' 함수를 빌려옵니다. (로그인 로직은 Context에 위임)
-  // -----------------------------------------------------------
+// [스마트 라우팅 적용] returnUrl: 비로그인 상태로 특정 페이지(예: 등록)에 접근하려다 
+// 튕겨서 로그인 창으로 온 경우, 로그인 성공 후 원래 가려던 곳으로 돌려보내기 위한 목적지
+const WebLogin = ({ returnUrl }) => {
+  // 전역 상태(UserContext)에서 사용자 정보를 업데이트하는 login 함수 호출
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
   
-  // 사용자가 입력한 아이디/비번을 저장하는 상태
+  // 로그인 폼 입력값 상태 관리
   const [inputs, setInputs] = useState({ id: '', pw: '' });
 
   // -----------------------------------------------------------
-  // 2. 입력값 변경 핸들러
-  // input 태그에 글자를 칠 때마다 state를 업데이트합니다.
+  // 1. [입력 핸들러] 아이디/비밀번호 타이핑 시 상태 실시간 업데이트
   // -----------------------------------------------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,54 +22,56 @@ const WebLogin = ({returnUrl}) => {
   };
 
   // -----------------------------------------------------------
-  // 3. 로그인 제출 핸들러
-  // [로그인하기] 버튼을 눌렀을 때 실행됩니다.
+  // 2. [로그인 요청] 백엔드 API와 통신하여 인증 수행
   // -----------------------------------------------------------
   const handleSubmit = (e) => {
-    e.preventDefault(); // 중요: 폼 제출 시 페이지가 새로고침 되는 것을 막습니다.
+    e.preventDefault(); // 폼 제출 시 브라우저 기본 동작(새로고침) 방지
     
-    // 빈칸 체크
     if (!inputs.id || !inputs.pw) {
       alert('아이디와 비밀번호를 입력해주세요.');
       return;
     }
     
+    // axios를 이용한 백엔드 로그인 API 호출
     axios.post('http://localhost:8080/api/auth/login', { 
       email: inputs.id, 
       password: inputs.pw 
     })
     .then((res) => {
-      // 통신 성공 시 실행되는 부분 (기존의 try 역할)
+      // 인증 성공 시 서버에서 발급한 JWT 토큰과 유저 정보를 받음
       const { token, user } = res.data;
-      localStorage.setItem('token', token); // 브라우저에 토큰 저장
+      
+      // 보안 토큰을 로컬 스토리지에 저장 (이후 API 요청 시 Authorization 헤더에 사용)
+      localStorage.setItem('token', token); 
 
+      // 전역 상태에 로그인된 유저 정보 업데이트
       if (typeof login === 'function') {
         login(user); 
       }
-      navigate(returnUrl || '/'); // 메인으로 이동
+      
+      // 로그인 완료 후 원래 가려던 주소(returnUrl)가 있으면 거기로, 없으면 홈(/)으로 이동
+      navigate(returnUrl || '/'); 
     })
     .catch((error) => {
-      // 통신 실패 시 실행되는 부분 (기존의 catch 역할)
+      // 인증 실패 (비밀번호 불일치, 없는 계정 등) 처리
       console.error("로그인 에러:", error);
       const errorMsg = error.response?.data?.message || '로그인에 실패했습니다.';
       alert(errorMsg);
     });
   };
 
-
   return (
-    // 전체 화면 중앙 정렬 컨테이너
+    // 로그인 컨테이너 영역 (화면 중앙 정렬)
     <div className="pc-container" style={{ alignItems: 'center', justifyContent: 'center' }}>
       
-      {/* 흰색 로그인 카드 박스 */}
       <div style={{ background: 'white', padding: 50, borderRadius: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.1)', width: 400, textAlign: 'center' }}>
         <h1 style={{ color: '#2c3e50', marginBottom: 30 }}>ALAF 로그인</h1>
         
-        {/* 로그인 폼 */}
+        {/* 로그인 폼 제출 영역 */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
           <input 
             name="id" 
-            placeholder="아이디" 
+            placeholder="아이디(이메일)" 
             value={inputs.id} 
             onChange={handleChange}
             style={{ padding: 15, borderRadius: 10, border: '1px solid #ddd', fontSize: 16 }}
@@ -93,7 +92,7 @@ const WebLogin = ({returnUrl}) => {
           </button>
         </form>
 
-        {/* 하단 링크 (회원가입 / 메인으로) */}
+        {/* 부가 네비게이션 링크 */}
         <p style={{ marginTop: 20, color: '#888', fontSize: 14 }}>
             계정이 없으신가요? <span onClick={() => navigate('/signup')}
             style={{ textDecoration:'underline', cursor:'pointer', color:'#2c3e50', fontWeight:'bold' }}>회원가입</span>

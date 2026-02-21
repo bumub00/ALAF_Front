@@ -1,9 +1,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+// 웹 전용 분실물 전역 상태 관리 컨텍스트
 export const ItemContext = createContext();
 
-// 👇 [핵심] 숫자(ID)를 한글(카테고리명)로 바꿔주는 번역표 정의
+// 서버 카테고리 ID(숫자) -> 프론트 노출용 한글명 매핑 객체
 const CATEGORY_ID_MAP = {
   1: '여성용가방', 2: '남성용가방', 3: '기타가방',
   4: '반지', 5: '목걸이', 6: '귀걸이', 7: '시계', 8: '기타(귀금속)',
@@ -25,7 +26,7 @@ const CATEGORY_ID_MAP = {
   64: '기타물품', 65: '무안공항유류품', 66: '유류품', 67: '무주물'
 };
 
-// 👇 [핵심] 한글(카테고리명)을 숫자(ID)로 바꿔주는 역방향 번역표 (등록용)
+// 등록 폼 입력용 한글명 -> 서버 전송용 카테고리 ID 역방향 매핑 객체
 const CATEGORY_NAME_MAP = Object.fromEntries(
   Object.entries(CATEGORY_ID_MAP).map(([id, name]) => [name, parseInt(id)])
 );
@@ -34,9 +35,7 @@ export const ItemProvider = ({ children }) => {
   const [items, setItems] = useState([]); 
   const BASE_URL = 'http://localhost:8080'; 
 
-  // -----------------------------------------------------------
-  // 1. [목록 조회] 
-  // -----------------------------------------------------------
+  // 전체 분실물 목록 조회
   const fetchItems = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/items`);
@@ -46,11 +45,7 @@ export const ItemProvider = ({ children }) => {
         title: dbItem.name,
         date: dbItem.created_at ? dbItem.created_at.split('T')[0] : '', 
         image: dbItem.image_url ? `${BASE_URL}${dbItem.image_url}` : null, 
-        
-        // 👇 [수정] 여기서 ID를 한글 이름으로 번역해서 넣어줍니다!
         category: CATEGORY_ID_MAP[dbItem.category_id] || '기타물품',
-        
-        // 상태값 설정 (서버 값 우선)
         status: dbItem.display_status || dbItem.status || '보관중'
       }));
       
@@ -64,9 +59,7 @@ export const ItemProvider = ({ children }) => {
     fetchItems();
   }, []);
 
-  // -----------------------------------------------------------
-  // 2. [상세 조회] 
-  // -----------------------------------------------------------
+  // 특정 분실물 상세 조회
   const getItemDetail = async (id) => {
     try {
       const response = await axios.get(`${BASE_URL}/api/items/${id}`);
@@ -77,7 +70,6 @@ export const ItemProvider = ({ children }) => {
         title: data.name,
         date: data.found_date ? data.found_date.split('T')[0] : '',
         location: `${data.address || ''}`, 
-        // 👇 [수정] 상세 조회에서도 ID를 한글로 번역!
         category: CATEGORY_ID_MAP[data.category_id] || data.category_name || '기타',
         image: data.image_url ? `${BASE_URL}${data.image_url}` : null,
         status: data.status,
@@ -91,9 +83,7 @@ export const ItemProvider = ({ children }) => {
     }
   };
 
-  // -----------------------------------------------------------
-  // 3. [물건 등록] 
-  // -----------------------------------------------------------
+  // 신규 분실물 등록
   const addItem = async (inputs, imageFile) => {
     try {
       const formData = new FormData();
@@ -104,8 +94,7 @@ export const ItemProvider = ({ children }) => {
       formData.append('place_id', inputs.nodeId); 
       formData.append('detail_address', inputs.detailLocation); 
 
-      // 👇 [수정] 위에서 만든 번역표를 이용해 한글 -> 숫자로 변환
-      // (매핑 실패 시 '기타물품(64)'으로 처리)
+      // 한글 카테고리명을 숫자 ID로 변환하여 전송 (기본값: 64)
       const catId = CATEGORY_NAME_MAP[inputs.category] || 64;
       formData.append('category_id', catId);
             
@@ -113,6 +102,7 @@ export const ItemProvider = ({ children }) => {
         formData.append('image', imageFile);
       }
 
+      // 로컬스토리지 토큰 기반 인증
       const token = localStorage.getItem('token');
       await axios.post(`${BASE_URL}/api/items`, formData, {
         headers: { 
@@ -121,6 +111,7 @@ export const ItemProvider = ({ children }) => {
         }
       });
 
+      // 등록 성공 시 목록 갱신
       fetchItems(); 
       return true;
 

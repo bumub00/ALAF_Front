@@ -1,12 +1,13 @@
 import React, { createContext, useState } from 'react';
 
-// 이름 변경: UserContext -> KioskUserContext
+// 키오스크 전용 사용자(로그인) 전역 상태 관리 컨텍스트
 export const KioskUserContext = createContext();
 
-// 이름 변경: UserProvider -> KioskUserProvider
 export const KioskUserProvider = ({ children }) => {
+  // 현재 로그인된 사용자 상태 (null: 비로그인 상태)
   const [user, setUser] = useState(null); 
 
+  // 키오스크 로그인 처리 (현재는 API 연동 전 테스트용 더미 데이터 사용)
   const login = (id, password) => {
     const mockUser = {
       id: 1,
@@ -19,6 +20,7 @@ export const KioskUserProvider = ({ children }) => {
     return true; 
   };
 
+  // 로그아웃 처리 (사용자 상태 초기화)
   const logout = () => {
     setUser(null); 
   };

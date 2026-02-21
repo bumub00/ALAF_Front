@@ -1,14 +1,16 @@
-// src/ui/web/WebMyPage.jsx
 import React, { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogOut, User, ShieldCheck, Mail, Phone, Package, ClipboardList } from 'lucide-react';
 import WebLogin from './WebLogin';
 
+// 사용자 마이페이지 및 관리자 대시보드 진입점
 const WebMyPage = () => {
+  // 전역 상태에서 유저 정보와 로그아웃 함수 가져오기
   const { user, logout } = useContext(UserContext);
   const navigate = useNavigate();
 
+  // 1. [접근 제어] 로그인 상태가 아니면 로그인 컴포넌트를 대신 렌더링
   if (!user) {
     return <WebLogin />;
   }
@@ -16,6 +18,7 @@ const WebMyPage = () => {
   return (
     <div className="pc-container" style={{ background: '#f8f9fa', minHeight: '100vh', paddingBottom: 50 }}>
       
+      {/* 상단 헤더 (메인으로 돌아가기) */}
       <header className="pc-header" style={{ justifyContent: 'flex-start', background: 'white', borderBottom: '1px solid #eee' }}>
         <div className="header-inner" style={{ padding: '0 20px' }}>
            <button 
@@ -31,13 +34,12 @@ const WebMyPage = () => {
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 20px' }}>
             <h2 style={{ marginBottom: 30, fontSize: 26, fontWeight: '800', color: '#2c3e50' }}>마이페이지</h2>
 
-            {/* --- 1. 내 정보 박스 --- */}
+            {/* 2. [내 정보 영역] 유저 기본 정보(이름, 이메일, 연락처) 출력 및 로그아웃 버튼 */}
             <div style={{ background: 'white', padding: '30px 40px', borderRadius: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 30, flexWrap: 'wrap' }}>
                 <div style={{ width: 90, height: 90, borderRadius: '50%', background: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <User size={45} color="#adb5bd" />
                 </div>
                 
-                {/* 이름, 이메일, 전화번호로 수정됨 */}
                 <div style={{ flex: 1, minWidth: 200 }}>
                     <h3 style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 12, color: '#333' }}>{user.name} 님</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#666', fontSize: 15, marginBottom: 8 }}>
@@ -58,7 +60,7 @@ const WebMyPage = () => {
                 </button>
             </div>
 
-            {/* --- 2. 관리자 전용 메뉴 (그대로 유지) --- */}
+            {/* 3. [권한 분기] 로그인한 유저의 role이 'ADMIN'일 경우에만 관리자 메뉴 노출 */}
             {user && user.role === 'ADMIN' && (
                 <div style={{ marginTop: 40 }}>
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#2b8a3e', fontSize: 18, fontWeight: 'bold', marginBottom: 15 }}>
@@ -81,10 +83,10 @@ const WebMyPage = () => {
                 </div>
             )}
 
-            {/* --- 3. 내 활동 내역 (등록 / 회수 신청) --- */}
+            {/* 4. [활동 내역] 추후 백엔드 API와 연동하여 실제 데이터를 매핑할 UI 틀 */}
             <div style={{ marginTop: 50, display: 'flex', flexDirection: 'column', gap: 40 }}>
                 
-                {/* 3-1. 내가 등록한 분실물 */}
+                {/* 4-1. 등록한 분실물 */}
                 <div>
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 15 }}>
                         <Package size={22} color="#4dabf7" /> 내가 등록한 분실물
@@ -94,7 +96,7 @@ const WebMyPage = () => {
                     </div>
                 </div>
 
-                {/* 3-2. 내가 회수 신청한 분실물 */}
+                {/* 4-2. 회수 신청 내역 */}
                 <div>
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 15 }}>
                         <ClipboardList size={22} color="#ff922b" /> 내가 회수 신청한 분실물
