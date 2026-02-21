@@ -1,70 +1,82 @@
-# Getting Started with Create React App
+📦 ALAF (All Lost And Found) - 스마트 분실물 통합 관리 시스템
+"잃어버린 모든 것을 찾다"
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+웹(Web)과 키오스크(Kiosk)를 연동하여 분실물을 쉽고 빠르게 등록하고 회수할 수 있는 스마트 솔루션입니다.
 
-## Available Scripts
+🚧 현재 프로젝트 상태 (Work In Progress)
+이 프로젝트는 현재 프로토타입 개발 단계입니다. 팀원분들은 아래 개발 진행 상황을 참고하여 코드를 확인해 주세요.
 
-In the project directory, you can run:
+UX 흐름(Flow) 중심 구현: 현재는 사용자가 물건을 등록하고 회수하는 논리적 흐름과 기능 구현에 집중되어 있습니다.
 
-### `npm start`
+UI 디자인 후순위: 기능 완성이 우선이므로, 디자인(CSS)은 레이아웃을 잡는 용도로만 작성되었습니다. 최종 단계에서 UI 폴리싱(Design Polish) 작업이 일괄 진행될 예정입니다.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+서버 연동 테스트 중: 프론트엔드와 백엔드 간의 데이터 통신 로직(axios)은 작성되어 있으나, 실제 DB 스키마 및 API 응답값에 맞춰 추가적인 수정과 조율이 필요합니다.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+📂 프로젝트 구조
+Bash
+src/
+├── context/          # 전역 상태 관리 (데이터 공급소)
+│   ├── ItemContext.js  # 분실물 데이터 (CRUD, API 호출)
+│   └── UserContext.js  # 유저 로그인 정보 (현재 Mock 데이터 사용 중)
+├── ui/
+│   ├── web/          # 🖥️ PC/Mobile 웹 브라우저용 페이지
+│   │   ├── WebHome.jsx     # 메인 (리스트, 검색, 필터)
+│   │   ├── WebRegister.jsx # 분실물 등록
+│   │   ├── WebDetail.jsx   # 상세 페이지
+│   │   └── ...
+│   └── kiosk/        # 📟 라즈베리파이 키오스크용 페이지
+│       ├── KioskHome.jsx     # 시작 화면
+│       ├── KioskRegister.jsx # 등록 절차 (정보 입력)
+│       ├── KioskCapture.jsx  # 등록 절차 (카메라 촬영)
+│       ├── KioskLocker.jsx   # 보관함 제어 (타이머)
+│       └── ...
+├── App.js            # 라우팅 (URL 경로 설정)
+└── index.js          # 진입점
+🛠 주요 기능 및 UX 흐름
+1. 🖥️ 웹 (Web)
+조회 및 검색: 카테고리별 필터링, 검색어 기능을 통해 분실물을 찾습니다.
 
-### `npm test`
+상세 정보: 습득 장소, 시간, 특징 등을 확인하고 수령 신청을 할 수 있습니다.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+회원가입/로그인: 본인 인증을 포함한 회원가입 절차 (UI 구현 완료).
 
-### `npm run build`
+2. 📟 키오스크 (Kiosk)
+분실물 등록 프로세스:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+정보 입력 (카테고리, 물건명 등)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+카메라 촬영 (웹캠 연동 및 미리보기)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+보관함 열림 및 물건 적재
 
-### `npm run eject`
+자동 잠금 및 등록 완료
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+분실물 회수 프로세스:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+로그인 (회수자 인증)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+회수할 물건 선택
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+보관함 열림 및 수령
 
-## Learn More
+회수 완료 처리
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+🚀 실행 방법
+이 프로젝트는 React로 작성되었습니다.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+패키지 설치
 
-### Code Splitting
+Bash
+npm install
+프로젝트 실행
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Bash
+npm start
+브라우저가 열리면 http://localhost:3000에서 확인 가능합니다.
 
-### Analyzing the Bundle Size
+키오스크 화면 확인: http://localhost:3000/kiosk 접속
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+🤝 협업 가이드 (팀원 필독)
+코드를 수정할 때는 주석을 참고하여 Context 흐름을 깨지 않도록 주의해 주세요.
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+서버 담당자: src/context/ItemContext.js 파일의 API 호출 부분을 중점적으로 확인 부탁드립니다.
