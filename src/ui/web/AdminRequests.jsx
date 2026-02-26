@@ -20,7 +20,7 @@ const AdminRequests = () => {
     const loadRequests = async () => {
         try {
             // 관리자 인증이 필요하므로 로컬 스토리지의 토큰을 헤더에 포함하여 요청
-            const res = await axios.get('http://localhost:8080/api/admin/requests', {
+            const res = await axios.get('http://49.50.138.248:8080/api/admin/requests', {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             setRequests(res.data);
@@ -37,7 +37,7 @@ const AdminRequests = () => {
         if (!window.confirm(`정말 ${action === 'APPROVE' ? '승인' : '거절'} 처리하시겠습니까?`)) return;
 
         try {
-            await axios.post(`http://localhost:8080/api/admin/requests/${requestId}/process`, { action }, {
+            await axios.post(`http://49.50.138.248:8080/api/admin/requests/${requestId}/process`, { action }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             alert('처리 완료!');
@@ -78,7 +78,7 @@ const AdminRequests = () => {
                         <p><strong>물품명:</strong> {req.item_name}</p>
                         <p><strong>발견장소:</strong> {req.original_address} ({req.original_detail_address})</p>
                         <p><strong>상세설명:</strong> {req.original_desc}</p>
-                        {req.original_image && <img src={`http://localhost:8080${req.original_image}`} alt="원본" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', marginTop: 10, border: '1px solid #ddd', borderRadius: 8 }} />}
+                        {req.original_image && <img src={`http://49.50.138.248:8080${req.original_image}`} alt="원본" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', marginTop: 10, border: '1px solid #ddd', borderRadius: 8 }} />}
                     </div>
 
                     {/* [우측 영역] 사용자 제출 증거 데이터 (주인이라 주장하는 자의 정보) */}
@@ -87,7 +87,7 @@ const AdminRequests = () => {
                         <p><strong>신청자:</strong> {req.requester_name} ({req.requester_email})</p>
                         <p><strong>주장하는 상세장소:</strong> <span style={{ color: 'red', fontWeight: 'bold' }}>{req.proof_detail_address}</span></p>
                         <p><strong>주장하는 특징:</strong> <span style={{ color: 'red', fontWeight: 'bold' }}>{req.proof_description}</span></p>
-                        {req.proof_image_url && <img src={`http://localhost:8080${req.proof_image_url}`} alt="증거" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', marginTop: 10, border: '1px solid #ddd', borderRadius: 8 }} />}
+                        {req.proof_image_url && <img src={`http://49.50.138.248:8080${req.proof_image_url}`} alt="증거" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', marginTop: 10, border: '1px solid #ddd', borderRadius: 8 }} />}
                     </div>
 
                     {/* [컨트롤 영역] 관리자의 승인/거절 액션 버튼 */}

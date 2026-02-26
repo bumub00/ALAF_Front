@@ -114,7 +114,7 @@ const WebSignup = () => {
 
     try {
       // 백엔드에 입력한 이메일로 인증번호 메일 발송 요청
-      const res = await fetch('http://localhost:8080/api/auth/send-code', {
+      const res = await fetch('http://49.50.138.248:8080/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: inputs.email }), 
@@ -153,7 +153,7 @@ const WebSignup = () => {
     setIsLoading(true);
     try {
       // (1) 이메일 인증번호 일치 여부 검증
-      const verifyRes = await fetch('http://localhost:8080/api/auth/verify-code', {
+      const verifyRes = await fetch('http://49.50.138.248:8080/api/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: inputs.email, code: verifyCode }),
@@ -166,7 +166,7 @@ const WebSignup = () => {
       }
 
       // (2) 인증 성공 시, 입력해둔 유저 정보로 최종 회원가입 요청
-      const registerRes = await fetch('http://localhost:8080/api/auth/register', {
+      const registerRes = await fetch('http://49.50.138.248:8080/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(inputs), 

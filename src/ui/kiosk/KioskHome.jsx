@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, Search, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
 const KIOSK_API = process.env.REACT_APP_KIOSK_API || "";   // 예: http://192.168.45.11:8000 (라즈베리파이)
-const MAIN_API  = process.env.REACT_APP_API_BASE || "";   // 예: http://localhost:8080 (중앙 Node)
+const MAIN_API  = process.env.REACT_APP_API_BASE || ""; 
 
 async function ping(url) {
   try {

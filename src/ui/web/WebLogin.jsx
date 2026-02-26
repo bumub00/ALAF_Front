@@ -3,9 +3,7 @@ import { UserContext } from '../../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-// [스마트 라우팅 적용] returnUrl: 비로그인 상태로 특정 페이지(예: 등록)에 접근하려다 
-// 튕겨서 로그인 창으로 온 경우, 로그인 성공 후 원래 가려던 곳으로 돌려보내기 위한 목적지
-const WebLogin = ({ returnUrl }) => {
+const WebLogin = () => {
   // 전역 상태(UserContext)에서 사용자 정보를 업데이트하는 login 함수 호출
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
@@ -33,7 +31,7 @@ const WebLogin = ({ returnUrl }) => {
     }
     
     // axios를 이용한 백엔드 로그인 API 호출
-    axios.post('http://localhost:8080/api/auth/login', { 
+    axios.post('http://49.50.138.248:8080/api/auth/login', { 
       email: inputs.id, 
       password: inputs.pw 
     })
@@ -49,8 +47,8 @@ const WebLogin = ({ returnUrl }) => {
         login(user); 
       }
       
-      // 로그인 완료 후 원래 가려던 주소(returnUrl)가 있으면 거기로, 없으면 홈(/)으로 이동
-      navigate(returnUrl || '/'); 
+      // 로그인 완료 후 메인 홈(/)으로 이동
+      navigate('/'); 
     })
     .catch((error) => {
       // 인증 실패 (비밀번호 불일치, 없는 계정 등) 처리
