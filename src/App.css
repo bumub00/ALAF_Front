@@ -1,42 +1,87 @@
 /* src/App.css */
 
-/* ========================================================
-   [1. 전역 초기화 (Reset CSS)]
-   브라우저마다 다른 기본 스타일을 없애고, 
-   모든 태그가 동일한 기준에서 시작하도록 만듭니다.
-   ======================================================== */
 * {
-  box-sizing: border-box; /* 패딩과 테두리가 너비에 포함되도록 설정 (레이아웃 깨짐 방지) */
-  margin: 0;              /* 기본 여백 제거 */
-  padding: 0;             /* 기본 안쪽 여백 제거 */
+  box-sizing: border-box; 
+  margin: 0;             
+  padding: 0;             
 }
 
-/* ========================================================
-   [2. Body 기본 스타일]
-   전체 페이지의 배경색과 폰트를 설정합니다.
-   ======================================================== */
 body {
-  /* 폰트 우선순위: Pretendard(웹폰트) -> 시스템 폰트 순서 */
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  
-  background-color: #f0f2f5; /* 웹사이트 기본 배경색 (연한 회색) */
-  
-  /* (선택사항) 파이어폭스 브라우저 스크롤바 얇게 */
+  background-color: #f0f2f5;
   scrollbar-width: thin; 
 }
 
-/* ========================================================
-   [3. 공통 요소 스타일]
-   링크와 버튼의 못생긴 기본 스타일을 제거합니다.
-   ======================================================== */
 a { 
-  text-decoration: none; /* 링크 밑줄 제거 */
-  color: inherit;        /* 부모 글자색 따라가기 (파란색 제거) */
+  text-decoration: none;
+  color: inherit;
 }
 
 button { 
-  border: none;      /* 버튼 테두리 제거 */
-  background: none;  /* 버튼 배경색 제거 */
-  font-family: inherit; /* 버튼 글씨체도 body 설정을 따르게 함 */
-  /* cursor: pointer; */ /* 필요하면 주석 해제해서 전역 적용 가능 */
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+/* 모바일 환경에서 UI 맞춤*/
+@media screen and (max-width: 768px) {
+  header, .pc-header > div {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 10px !important;
+  }
+  header input[type="text"], .pc-header input[type="text"] {
+    flex: 1 !important; 
+    width: 100% !important;
+    height: 34px !important;
+    font-size: 13px !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+  }
+  header button, .pc-header button {
+    height: 34px !important;
+    padding: 0 10px !important; 
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .pc-grid {
+    display: block !important; 
+    padding: 15px !important;
+  }
+  .pc-card {
+    display: block !important;
+    width: 100% !important; 
+    margin-bottom: 20px !important;
+    box-sizing: border-box !important;
+  }
+  .card-img {
+    height: 220px !important; 
+    width: 100% !important;
+  }
+  .pc-main div[style*="display: flex"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 15px !important;
+  }
+  .pc-main input:not([type="file"]), 
+  .pc-main select, 
+  .pc-main textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 14px !important;
+    padding: 10px !important;
+  }
+  .pc-main label, 
+  .pc-main span, 
+  .pc-main div[style*="font-weight"] {
+    white-space: nowrap !important;
+    display: block !important;
+    margin-bottom: 5px !important;
+  }
 }
