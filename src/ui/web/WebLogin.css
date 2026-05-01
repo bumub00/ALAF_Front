@@ -1,0 +1,144 @@
+/* src/ui/web/WebLogin.css */
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+:root {
+  --alaf-blue-dark: #1b5299;  
+  --alaf-blue-main: #00a8cc;  
+  --alaf-blue-light: #e6f4f9; 
+}
+
+/* 화면 전체를 채우고 중앙 정렬 */
+.login-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f9f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 로그인 폼 하얀 박스 */
+.login-box {
+  background: #ffffff;
+  width: 100%;
+  max-width: 400px; 
+  padding: 50px 40px;
+  border-radius: 16px;
+  border: 1px solid #eaecee;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+  text-align: center;
+}
+
+/* ★ 로고 크기 확대 및 cursor: pointer 제거 ★ */
+.login-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px; /* 글씨가 커진 만큼 간격도 살짝 넓힘 */
+  margin-bottom: 32px; /* 아래 여백도 시원하게 */
+}
+.login-logo img {
+  height: 52px; /* 36px -> 52px로 대폭 확대 */
+  width: auto;
+}
+.login-logo h1 {
+  font-size: 42px; /* 28px -> 42px로 큼직하게 */
+  color: var(--alaf-blue-dark);
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -1px; /* 글씨가 커졌으니 자간을 살짝 조임 */
+}
+
+/* --- (이하 나머지 코드는 이전과 동일) --- */
+/* 타이틀 */
+.login-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 30px;
+  letter-spacing: -0.5px;
+}
+
+/* 폼 영역 */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 입력창 */
+.input-field {
+  width: 100%;
+  background-color: #ffffff; 
+  border: 1px solid #b6d4ee; 
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #111;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.input-field::placeholder { color: #aaa; } 
+
+.input-field:focus {
+  border-color: var(--alaf-blue-main);
+  box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.15); 
+}
+
+/* 로그인 버튼 */
+.submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: var(--alaf-blue-dark);
+  color: white;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  margin-top: 10px;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+.submit-btn:hover { background: #133e75; }
+
+/* 부가 링크 영역 */
+.extra-links {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.extra-links p {
+  color: #888;
+  font-size: 14px;
+  margin: 0;
+}
+
+.link-text {
+  color: var(--alaf-blue-dark);
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.link-text:hover {
+  color: var(--alaf-blue-main);
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-family: inherit;
+}
+.back-btn:hover { color: #888; }

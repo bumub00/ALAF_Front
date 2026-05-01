@@ -1,0 +1,193 @@
+/* src/ui/web/WebRegister.css */
+
+/* 배경과 기본 여백 설정 */
+.register-main {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px !important; 
+  padding-bottom: 100px !important;
+}
+
+/* 폼 전체를 감싸는 하얀 박스 */
+.register-box {
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  padding: 50px 60px;
+  border-radius: 16px;
+  border: 1px solid #eaecee;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.03); 
+}
+
+/* 상단 타이틀 영역 */
+.register-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+.register-header h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111; /* ★ 진한 파란색에서 세련된 검정색(다크 그레이)으로 변경! */
+  margin: 0 0 10px 0;
+  letter-spacing: -0.5px;
+}
+.register-header p {
+  font-size: 15px;
+  color: #888; 
+  margin: 0;
+}
+
+/* 입력 폼 그리드 배치 */
+.register-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px; 
+}
+
+/* 폼 그룹 (라벨 + 인풋 묶음) */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333; 
+  margin-bottom: 10px;
+}
+.required {
+  color: #e74c3c;
+  margin-left: 2px;
+}
+
+/* 입력창 공통 스타일 (배경은 하얗게, 테두리만 은은한 파란색) */
+.input-field {
+  width: 100%;
+  background-color: #ffffff; 
+  border: 1px solid #b6d4ee; 
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #111;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.input-field::placeholder { color: #aaa; } 
+
+/* 입력창 클릭(포커스) 시 쨍한 청록색 테두리와 그림자 */
+.input-field:focus {
+  border-color: var(--alaf-blue-main);
+  box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.15); 
+}
+
+/* 드롭다운 화살표 색상 복구 */
+.select-field {
+  cursor: pointer;
+  appearance: none; 
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* 한 줄에 여러 개 배치하는 로우(Row) */
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr;
+  gap: 20px;
+}
+
+/* 텍스트 에어리어 (상세 설명) */
+.textarea-field {
+  height: 140px;
+  resize: none;
+  line-height: 1.6;
+}
+
+/* 사진 첨부 박스 (테두리만 파랗게) */
+.image-upload-box {
+  width: 100%;
+  height: 240px;
+  border-radius: 12px;
+  border: 2px dashed #b6d4ee; 
+  background-color: #fafafa; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.image-upload-box:hover {
+  border-color: var(--alaf-blue-main);
+  background-color: #ffffff;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #888; 
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.image-remove-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.6); 
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.image-remove-btn:hover { background: rgba(0,0,0,0.8); }
+
+/* 하단 안내 메시지 */
+.info-message {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.user-info { color: var(--alaf-blue-dark); }
+.guest-info { color: #888; }
+
+/* 제출 버튼 */
+.submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: var(--alaf-blue-dark);
+  color: white;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+.submit-btn:hover { background: #133e75; }
+
+/* 반응형 모바일 대응 */
+@media (max-width: 768px) {
+  .register-box { padding: 30px 20px; }
+  .form-row, .form-row-3 { display: flex; flex-direction: column; gap: 28px; }
+}
