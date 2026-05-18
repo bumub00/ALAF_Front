@@ -48,7 +48,6 @@ const KioskHome = () => {
       </header>
 
       <main className="kiosk-main">
-        {/* 분실물 등록 버튼 */}
         <button
           onClick={() => navigate("/kiosk/capture")}
           disabled={!canRegister}
