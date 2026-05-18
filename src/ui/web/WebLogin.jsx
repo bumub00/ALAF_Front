@@ -52,7 +52,6 @@ const WebLogin = () => {
     <div className="login-wrapper">
       <div className="login-box">
         
-        {/* ★ onClick 삭제: 클릭해도 홈으로 가지 않음 ★ */}
         <div className="login-logo">
           <img src="/logo.jpg" alt="ALAF Logo" />
           <h1>ALAF</h1>
@@ -81,16 +80,33 @@ const WebLogin = () => {
           </button>
         </form>
 
-        <div className="extra-links">
-          <p>
+        {/* ★ CSS 충돌 방지 및 완벽한 중앙 정렬 적용 ★ */}
+        <div className="extra-links" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginTop: '20px' }}>
+          <p style={{ margin: 0, color: '#666' }}>
             계정이 없으신가요?{' '}
-            <span className="link-text" onClick={() => navigate('/signup')}>
+            <span 
+              className="link-text" 
+              onClick={() => navigate('/signup')}
+              style={{ cursor: 'pointer', fontWeight: 'bold', color: '#1b5299' }}
+            >
               회원가입
             </span>
           </p>
-          <button className="back-btn" onClick={() => navigate('/')}>
+          
+          {/* back-btn 클래스를 삭제하고 인라인 스타일로 고정 */}
+          <div 
+            onClick={() => navigate('/')}
+            style={{
+              cursor: 'pointer',
+              color: '#666',
+              fontWeight: '700',
+              textDecoration: 'underline',
+              textUnderlineOffset: '4px',
+              fontSize: '15px'
+            }}
+          >
             메인으로 돌아가기
-          </button>
+          </div>
         </div>
         
       </div>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
+
 // -----------------------------------------------------------
 // [1] 페이지 컴포넌트 불러오기
 // -----------------------------------------------------------
@@ -11,8 +12,16 @@ import WebMyPage from './ui/web/WebMyPage';
 import WebSignup from './ui/web/WebSignup';
 import WebTerms from './ui/web/WebTerms';
 import WebLogin from './ui/web/WebLogin';
-/*
-// (2) 키오스크(Raspberry Pi)용 페이지
+
+// (2) Admin 페이지
+import AdminRequests from './ui/web/AdminRequests';
+
+// (3) 커뮤니티
+import CommunityHome from './ui/web/CommunityHome';
+import CommunityDetail from './ui/web/CommunityDetail';
+import CommunityWrite from './ui/web/CommunityWrite';
+
+// ★ (4) 키오스크(Raspberry Pi)용 페이지 주석 해제!
 import KioskHome from './ui/kiosk/KioskHome';
 import KioskRegister from './ui/kiosk/KioskRegister';
 import KioskCapture from './ui/kiosk/KioskCapture';
@@ -21,25 +30,20 @@ import KioskConfirm from './ui/kiosk/KioskConfirm';
 import KioskLogin from './ui/kiosk/KioskLogin';
 import KioskRecoveryList from './ui/kiosk/KioskRecoveryList';
 import KioskRetrievalLocker from './ui/kiosk/KioskRetrievalLocker';
-*/
-// Admin 페이지
-import AdminRequests from './ui/web/AdminRequests';
 
-//커뮤니티
-import CommunityHome from './ui/web/CommunityHome';
-import CommunityDetail from './ui/web/CommunityDetail';
-import CommunityWrite from './ui/web/CommunityWrite';
 // -----------------------------------------------------------
 // [2] Context (데이터 공급소) 불러오기
 // -----------------------------------------------------------
-import { ItemProvider } from './context/ItemContext'; // 분실물 데이터
-import { UserProvider } from './context/UserContext'; // 유저 로그인 정보
-//import { KioskItemProvider } from './context/KioskItemContext';
-//import { KioskUserProvider } from './context/KioskUserContext';
+import { ItemProvider } from './context/ItemContext'; 
+import { UserProvider } from './context/UserContext'; 
+
+// ★ 키오스크 전용 Provider 주석 해제 (만약 파일이 없다면 이 부분은 지우셔도 됩니다)
+import { KioskItemProvider } from './context/KioskItemContext';
+import { KioskUserProvider } from './context/KioskUserContext';
 
 import './App.css';
 
-// Axios 설정: 모든 요청 전에 실행됨
+// Axios 설정
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -48,68 +52,54 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
-// 토큰이 만료되어 401 에러가 나면 자동으로 로그아웃 처리
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login'; // 로그인 페이지로 튕기기
+      window.location.href = '/login'; 
     }
     return Promise.reject(error);
   }
 );
 
-
-
-
 function App() {
   return (
-    // -----------------------------------------------------------
-    // [3] Provider 감싸기 (전역 상태 관리)
-    // 앱 전체에서 로그인 정보(User)와 물건 정보(Item)를 쓸 수 있도록 감싸줍니다.
-    // -----------------------------------------------------------
     <UserProvider>
       <ItemProvider>
-        {/*<KioskUserProvider>*/}
-          {/* <KioskItemProvider>*/}
-    {/* [4] 라우터 설정 (주소별 화면 연결) */}
-        <BrowserRouter>
-          <Routes>
+        {/* ★ 키오스크 Provider 감싸기 주석 해제 */}
+        <KioskUserProvider>
+          <KioskItemProvider>
             
-            {/* =======================================================
-                [Section A] 일반 웹 페이지 라우팅
-                (PC나 스마트폰으로 접속했을 때 보여줄 화면들)
-               ======================================================= */}
-            <Route path="/" element={<WebHome />} />          {/* 메인 화면 */}
-            <Route path="/detail/:id" element={<WebDetail />} /> {/* 상세 페이지 (ex: /detail/1) */}
-            <Route path="/register" element={<WebRegister />} /> {/* 등록 페이지 */}
-            <Route path="/mypage" element={<WebMyPage />} />     {/* 마이 페이지 */}
-            <Route path="/signup" element={<WebSignup />} />     {/* 회원가입 페이지 */}
-            <Route path="/terms/:id" element={<WebTerms />} />
-            <Route path="/admin/requests" element={<AdminRequests />} />
-            <Route path="/community" element={<CommunityHome />} />
-            <Route path="/community/write" element={<CommunityWrite />} />
-            <Route path="/community/:id" element={<CommunityDetail />} />
-            <Route path="/login" element={<WebLogin />} />
-            {/* =======================================================
-                [Section B] 키오스크 전용 라우팅
-                (라즈베리파이 터치스크린에서 보여줄 화면들 - '/kiosk'로 시작)
-               ======================================================= */}
-           {/*<Route path="/kiosk" element={<KioskHome />} /> 
+            <BrowserRouter>
+              <Routes>
+                {/* [Section A] 일반 웹 페이지 라우팅 */}
+                <Route path="/" element={<WebHome />} />          
+                <Route path="/detail/:id" element={<WebDetail />} /> 
+                <Route path="/register" element={<WebRegister />} /> 
+                <Route path="/mypage" element={<WebMyPage />} />     
+                <Route path="/signup" element={<WebSignup />} />     
+                <Route path="/terms/:id" element={<WebTerms />} />
+                <Route path="/admin/requests" element={<AdminRequests />} />
+                <Route path="/community" element={<CommunityHome />} />
+                <Route path="/community/write" element={<CommunityWrite />} />
+                <Route path="/community/:id" element={<CommunityDetail />} />
+                <Route path="/login" element={<WebLogin />} />
 
-            <Route path="/kiosk/register" element={<KioskRegister />} /> 
-            <Route path="/kiosk/capture" element={<KioskCapture />} />  
-            <Route path="/kiosk/locker" element={<KioskLocker />} />     
-            <Route path="/kiosk/confirm" element={<KioskConfirm />} /> 
-            
-            <Route path="/kiosk/login" element={<KioskLogin />} />       
-            <Route path="/kiosk/recovery-List" element={<KioskRecoveryList />} /> 
-            <Route path="/kiosk/retrieval-locker" element={<KioskRetrievalLocker />} /> */}
-          </Routes>
-        </BrowserRouter>
-        {/*  </KioskItemProvider>*/}
-        {/*</KioskUserProvider>*/}
+                {/* ★ [Section B] 키오스크 전용 라우팅 주석 해제! */}
+                <Route path="/kiosk" element={<KioskHome />} /> 
+                <Route path="/kiosk/register" element={<KioskRegister />} /> 
+                <Route path="/kiosk/capture" element={<KioskCapture />} />  
+                <Route path="/kiosk/locker" element={<KioskLocker />} />     
+                <Route path="/kiosk/confirm" element={<KioskConfirm />} /> 
+                <Route path="/kiosk/login" element={<KioskLogin />} />       
+                <Route path="/kiosk/recovery-List" element={<KioskRecoveryList />} /> 
+                <Route path="/kiosk/retrieval-locker" element={<KioskRetrievalLocker />} />
+              </Routes>
+            </BrowserRouter>
+
+          </KioskItemProvider>
+        </KioskUserProvider>
       </ItemProvider>
    </UserProvider>
   );

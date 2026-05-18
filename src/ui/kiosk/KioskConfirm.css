@@ -1,0 +1,119 @@
+/* src/ui/kiosk/KioskConfirm.css */
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+:root {
+  --alaf-blue-dark: #1b5299;  
+  --alaf-blue-main: #00a8cc;  
+  --alaf-blue-light: #e6f4f9; 
+  --alaf-blue-border: #b6d4ee; 
+}
+
+/* 화면 전체 중앙 정렬 */
+.confirm-container {
+  height: 100vh;
+  width: 100vw;
+  background-color: #f9f9fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* 아이콘을 부드러운 청록색 원형 배경 안에 배치 */
+.confirm-icon-wrapper {
+  width: 140px;
+  height: 140px;
+  background: var(--alaf-blue-light);
+  color: var(--alaf-blue-main);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0, 168, 204, 0.15);
+  /* 등장할 때 통통 튀는 애니메이션 */
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 텍스트 스타일 */
+.confirm-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 16px 0;
+  letter-spacing: -1px;
+}
+
+.confirm-subtitle {
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 40px 0;
+  font-weight: 500;
+}
+/* 카운트다운 숫자 강조 */
+.confirm-subtitle span {
+  font-weight: 800;
+  color: var(--alaf-blue-dark);
+}
+
+/* 홈 버튼 스타일 (크고 누르기 편하게) */
+.confirm-home-btn {
+  padding: 0 40px;
+  height: 64px;
+  background: var(--alaf-blue-dark);
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 20px rgba(27, 82, 153, 0.2);
+  transition: transform 0.1s;
+  font-family: inherit;
+}
+.confirm-home-btn:active {
+  transform: scale(0.96); /* 터치 시 눌리는 효과 */
+}
+
+/* =======================================
+   라즈베리파이 7인치 터치스크린 최적화
+   ======================================= */
+@media (max-width: 800px), (max-height: 600px) {
+  .confirm-icon-wrapper {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 20px;
+  }
+  .confirm-icon-wrapper svg {
+    width: 60px;
+    height: 60px;
+  }
+  .confirm-title {
+    font-size: 30px;
+    margin-bottom: 12px;
+  }
+  .confirm-subtitle {
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+  .confirm-home-btn {
+    height: 56px;
+    font-size: 18px;
+    padding: 0 30px;
+    border-radius: 16px;
+  }
+}

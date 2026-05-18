@@ -1,101 +1,116 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Unlock, Lock, LogOut } from 'lucide-react';
+// src/ui/kiosk/KioskRetrievalLocker.jsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Unlock, Lock, Loader2, AlertTriangle } from "lucide-react";
+import { hwLockerOpen, hwLockerClose } from "./hwApi";
+import "./KioskRetrievalLocker.css"; // ★ 전용 CSS 연결
 
 const KioskRetrievalLocker = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // -----------------------------------------------------------
-  // 1. 데이터 수신
-  // 목록 화면에서 선택한 '찾을 물건' 정보를 받아옵니다.
-  // -----------------------------------------------------------
-  const item = location.state; 
+  const data = location.state;
 
-  // 타이머 상태 (30초)
+  const lockerNumber = useMemo(() => {
+    return data?.lockerNumber ?? data?.locker_number ?? data?.locker ?? 1;
+  }, [data]);
+
   const [count, setCount] = useState(30);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
 
-  // -----------------------------------------------------------
-  // 2. [카운트다운 로직]
-  // -----------------------------------------------------------
+  const closedRef = useRef(false);
+
+  // 화면 진입 시 보관함 열기
   useEffect(() => {
+    if (!data) return;
+
+    const openLocker = async () => {
+      try {
+        setErr(null);
+        await hwLockerOpen(lockerNumber, 30);
+      } catch (e) {
+        setErr(`보관함 열기 실패: ${e.message}`);
+      }
+    };
+
+    openLocker();
+  }, [data, lockerNumber]);
+
+  // 30초 카운트다운
+  useEffect(() => {
+    if (!data) return;
+
     const timer = setInterval(() => {
       setCount((prev) => {
-        // 시간이 다 되면 (0초 근접)
         if (prev <= 1) {
           clearInterval(timer);
-          handleFinish(); // 시간 초과 시 자동 완료 처리
+          handleCloseLocker();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    // 컴포넌트가 꺼질 때 타이머 정리 (메모리 누수 방지)
     return () => clearInterval(timer);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
-  // -----------------------------------------------------------
-  // 3. [완료 처리 함수]
-  // 버튼을 누르거나 시간이 다 되면 실행
-  // -----------------------------------------------------------
-  const handleFinish = () => {
-    // [UX] 회수 완료 메시지
-    alert("회수가 완료되었습니다. 안녕히 가세요!");
-    
-    // 키오스크 첫 화면(메인)으로 복귀
-    navigate('/kiosk'); 
+  const handleCloseLocker = async () => {
+    if (closedRef.current) return;
+    closedRef.current = true;
+
+    setBusy(true);
+    try {
+      await hwLockerClose(lockerNumber);
+    } catch (e) {
+      console.warn("locker close failed:", e);
+    } finally {
+      setBusy(false);
+      navigate("/kiosk");
+    }
   };
 
-  // 데이터가 없으면 아무것도 렌더링 안 함
-  if (!item) return null;
+  if (!data) return null;
 
   return (
-    // [스타일] 회수 모드는 '파란색(#4834d4)' 배경을 써서 등록 모드와 구분함
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#4834d4', color: 'white', padding: 20, boxSizing: 'border-box' }}>
+    <div className="retrieval-container">
       
-      {/* 상단 아이콘 (열림) */}
-      <div style={{ marginBottom: 20, padding: 30, background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}>
-        <Unlock size={80} color="#a29bfe" />
+      {/* 자물쇠 아이콘 (애니메이션 적용) */}
+      <div className="retrieval-icon-wrapper">
+        <Unlock size={70} strokeWidth={2.5} />
       </div>
 
-      <h1 style={{ fontSize: 32, margin: 0, fontWeight: 'bold' }}>보관함이 열렸습니다!</h1>
-      
-      {/* ★ 회수 안내 멘트 (물건 이름 강조) */}
-      <p style={{ fontSize: 20, marginTop: 15, color: '#d1d8e0', textAlign:'center' }}>
-        물건(<b style={{color:'white'}}>{item.title}</b>)을 <b>꺼내고</b><br/>
-        문을 닫아주세요.
+      <h1 className="retrieval-title">
+        회수 보관함이 열렸습니다!
+      </h1>
+      <p className="retrieval-desc">
+        보관함 <b className="highlight-text">#{lockerNumber}</b>에서 물건을 꺼내신 후 회수 완료를 눌러주세요.
       </p>
+
+      {/* 에러 발생 시 알림창 */}
+      {err && (
+        <div className="retrieval-error">
+          <AlertTriangle size={18} />
+          <span>{err}</span>
+        </div>
+      )}
 
       {/* 카운트다운 타이머 */}
-      <div style={{ margin: '30px 0', fontSize: 80, fontWeight: 'bold', fontFamily: 'monospace', color: '#ffeb3b' }}>
-        {count}
+      <div className="retrieval-timer-wrapper">
+        <div className="retrieval-timer">{count}</div>
+        <p className="retrieval-timer-text">
+          초 후 자동으로 잠기고 홈으로 돌아갑니다.
+        </p>
       </div>
 
-      <p style={{ fontSize: 16, color: '#d1d8e0', marginBottom: 40 }}>
-        초 후 자동으로 닫힙니다.
-      </p>
-
       {/* 회수 완료 버튼 */}
-      <button 
-        onClick={handleFinish}
-        style={{ 
-          padding: '20px 60px', 
-          background: 'white', 
-          color: '#4834d4', 
-          fontSize: 24, 
-          fontWeight: 'bold', 
-          borderRadius: 50, 
-          border: 'none', 
-          cursor: 'pointer',
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 15,
-          boxShadow: '0 5px 20px rgba(0, 0, 0, 0.2)'
-        }}
+      <button
+        onClick={handleCloseLocker}
+        disabled={busy}
+        className={`retrieval-close-btn ${busy ? 'busy' : ''}`}
       >
-        <LogOut size={30} />
-        회수 완료
+        {busy ? <Loader2 className="spin" size={28} /> : <Lock size={28} />}
+        회수 완료 (즉시 잠금)
       </button>
 
     </div>

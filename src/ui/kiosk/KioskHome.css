@@ -1,0 +1,234 @@
+/* src/ui/kiosk/KioskHome.css */
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+:root {
+  --alaf-blue-dark: #1b5299;  
+  --alaf-blue-main: #00a8cc;  
+  --alaf-blue-light: #e6f4f9; 
+  --alaf-blue-border: #b6d4ee; 
+}
+
+/* 키오스크 전체 배경 (화면 꽉 차게) */
+.kiosk-container {
+  height: 100vh;
+  width: 100vw;
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9fa; /* 웹 배경색과 동일 */
+  box-sizing: border-box;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* 상단 헤더 영역 */
+.kiosk-header {
+  text-align: center;
+  margin-bottom: 30px;
+  flex-shrink: 0;
+}
+
+.kiosk-logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kiosk-logo-img {
+  height: 48px;
+  width: auto;
+}
+.kiosk-logo-text {
+  font-size: 36px;
+  color: var(--alaf-blue-dark);
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+/* 상태 표시 바 */
+.kiosk-status-bar {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 15px;
+}
+.status-badge b { font-weight: 700; }
+.status-badge span { font-weight: 800; }
+
+.status-ok {
+  background: rgba(43, 138, 62, 0.08);
+  color: #2b8a3e;
+  border: 1px solid rgba(43, 138, 62, 0.2);
+}
+.status-fail {
+  background: rgba(224, 49, 49, 0.08);
+  color: #e03131;
+  border: 1px solid rgba(224, 49, 49, 0.2);
+}
+
+.kiosk-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  background: #ffffff;
+  color: #555;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  transition: background 0.2s;
+  font-family: inherit;
+}
+.kiosk-refresh-btn:active { background: #f0f0f0; }
+.kiosk-refresh-btn.checking { opacity: 0.7; pointer-events: none; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.kiosk-error-msg {
+  margin-top: 16px;
+  color: #e03131;
+  font-size: 16px;
+  font-weight: 600;
+  background: #fff5f5;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 12px;
+}
+
+/* 메인 2분할 버튼 영역 */
+.kiosk-main {
+  flex: 1;
+  display: flex;
+  gap: 30px;
+  min-height: 0; /* flex 자식 넘침 방지 */
+}
+
+/* 키오스크 메인 터치 버튼 */
+.kiosk-action-card {
+  flex: 1;
+  border-radius: 32px; /* 키오스크답게 둥근 모서리 극대화 */
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+  color: white;
+}
+/* 터치 시 피드백 (눌리는 느낌) */
+.kiosk-action-card:active:not(.disabled) {
+  transform: scale(0.98);
+}
+.kiosk-action-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(80%);
+}
+
+.kiosk-action-card h2 {
+  font-size: 40px;
+  font-weight: 800;
+  margin: 20px 0 10px 0;
+  letter-spacing: -1px;
+}
+.kiosk-action-card p {
+  font-size: 18px;
+  font-weight: 500;
+  opacity: 0.9;
+  margin: 0;
+}
+.icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 24px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+/* 분실물 등록 (청록색) */
+.register-card {
+  background: var(--alaf-blue-main); /* 청록색 */
+}
+
+/* 분실물 회수 (다크블루) */
+.pickup-card {
+  background: var(--alaf-blue-dark); /* 다크블루 */
+}
+/* =======================================
+   라즈베리파이 7인치 터치스크린(800x480) 최적화
+   ======================================= */
+@media (max-width: 800px), (max-height: 600px) {
+  /* 전체 여백 줄이기 */
+  .kiosk-container {
+    padding: 15px 20px;
+  }
+
+  /* 헤더 크기 및 여백 축소 */
+  .kiosk-header {
+    margin-bottom: 15px;
+  }
+  .kiosk-logo-wrapper {
+    margin-bottom: 10px;
+  }
+  .kiosk-logo-img {
+    height: 32px;
+  }
+  .kiosk-logo-text {
+    font-size: 24px;
+  }
+
+  /* 상태 뱃지 크기 축소 */
+  .status-badge, .kiosk-refresh-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .status-badge svg, .kiosk-refresh-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* 메인 버튼 여백 및 크기 축소 */
+  .kiosk-main {
+    gap: 15px;
+  }
+  .kiosk-action-card {
+    border-radius: 20px;
+  }
+  
+  /* 아이콘 크기 축소 */
+  .icon-wrapper {
+    padding: 16px;
+    margin-bottom: 5px;
+  }
+  .icon-wrapper svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* 버튼 텍스트 축소 */
+  .kiosk-action-card h2 {
+    font-size: 28px;
+    margin: 10px 0 5px 0;
+  }
+  .kiosk-action-card p {
+    font-size: 14px;
+  }
+}

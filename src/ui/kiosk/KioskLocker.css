@@ -1,0 +1,164 @@
+/* src/ui/kiosk/KioskLocker.css */
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+:root {
+  --alaf-blue-dark: #1b5299;  
+  --alaf-blue-main: #00a8cc;  
+  --alaf-blue-light: #e6f4f9; 
+  --alaf-blue-border: #b6d4ee; 
+}
+
+/* 화면 전체 중앙 정렬 */
+.locker-container {
+  height: 100vh;
+  width: 100vw;
+  background-color: #f9f9fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* 열린 자물쇠 아이콘 (부드러운 숨쉬기 애니메이션) */
+.locker-icon-wrapper {
+  width: 120px;
+  height: 120px;
+  background: var(--alaf-blue-light);
+  color: var(--alaf-blue-main);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 30px rgba(0, 168, 204, 0.15);
+  animation: pulseIcon 2s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+  0% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 168, 204, 0.15); }
+  50% { transform: scale(1.05); box-shadow: 0 15px 40px rgba(0, 168, 204, 0.3); }
+  100% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 168, 204, 0.15); }
+}
+
+/* 텍스트 스타일 */
+.locker-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 12px 0;
+  letter-spacing: -1px;
+}
+
+.locker-desc {
+  font-size: 18px;
+  color: #555;
+  margin: 0 0 10px 0;
+  font-weight: 500;
+}
+.highlight-text {
+  color: var(--alaf-blue-dark);
+  font-weight: 800;
+  font-size: 20px;
+}
+
+/* 에러 메시지 */
+.locker-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff5f5;
+  color: #e03131;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid #ffc9c9;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 10px;
+  max-width: 520px;
+}
+
+/* 카운트다운 영역 */
+.locker-timer-wrapper {
+  margin: 20px 0 30px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.locker-timer {
+  font-size: 72px;
+  font-weight: 800;
+  color: var(--alaf-blue-main);
+  line-height: 1;
+  margin-bottom: 10px;
+  font-variant-numeric: tabular-nums; /* 숫자가 흔들리지 않게 고정 */
+}
+.locker-timer-text {
+  font-size: 16px;
+  color: #888;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* 즉시 잠금(닫기) 버튼 */
+.locker-close-btn {
+  padding: 0 40px;
+  height: 64px;
+  background: var(--alaf-blue-dark);
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 20px rgba(27, 82, 153, 0.2);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.locker-close-btn:active:not(.busy) {
+  transform: scale(0.96);
+}
+.locker-close-btn.busy {
+  background: var(--alaf-blue-main);
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* =======================================
+   라즈베리파이 7인치 터치스크린 최적화
+   ======================================= */
+@media (max-width: 800px), (max-height: 600px) {
+  .locker-container { padding: 10px; }
+  .locker-icon-wrapper {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 16px;
+  }
+  .locker-icon-wrapper svg { width: 48px; height: 48px; }
+  
+  .locker-title { font-size: 30px; }
+  .locker-desc { font-size: 16px; margin-bottom: 5px; }
+  .highlight-text { font-size: 18px; }
+  
+  .locker-timer-wrapper { margin: 15px 0 20px 0; }
+  .locker-timer { font-size: 60px; }
+  .locker-timer-text { font-size: 14px; }
+  
+  .locker-close-btn {
+    height: 56px;
+    font-size: 18px;
+    padding: 0 30px;
+    border-radius: 16px;
+  }
+}

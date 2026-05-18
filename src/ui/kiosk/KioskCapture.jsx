@@ -1,174 +1,203 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ItemContext } from '../../context/ItemContext';
-import { ArrowLeft, Camera, RefreshCw, Check } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ArrowLeft, Camera, RefreshCw, Sparkles, CheckCircle2, AlertTriangle } from "lucide-react";
+import { hwCapture, hwImageUrl, hwAnalyze } from "./hwApi";
+import "./KioskCapture.css"; 
 
-const KioskCapture = () => {
+const SUB_TO_CATEGORY_ID = {
+  "여성용가방": 1, "남성용가방": 2, "기타가방": 3,
+  "반지": 4, "목걸이": 5, "귀걸이": 6, "시계": 7, "기타 귀금속": 8,
+  "학습서적": 9, "소설": 10, "컴퓨터서적": 11, "만화책": 12, "기타 서적": 13,
+  "서류": 14, "기타 서류": 15, "쇼핑백": 16, "스포츠용품": 17,
+  "건반악기": 18, "타악기": 19, "관악기": 20, "현악기": 21, "기타 악기": 22,
+  "여성의류": 23, "남성의류": 24, "아기의류": 25, "모자": 26, "신발": 27, "기타 의류": 28,
+  "자동차열쇠": 29, "네비게이션": 30, "자동차번호판": 31, "임시번호판": 32, "기타 자동차용품": 33,
+  "태블릿": 34, "스마트워치": 35, "무선이어폰": 36, "카메라": 37, "기타 전자기기": 38,
+  "여성용지갑": 39, "남성용지갑": 40, "기타 지갑": 41, "신분증": 42, "면허증": 43, "여권": 44, "기타 증명서": 45,
+  "삼성노트북": 46, "LG노트북": 47, "애플노트북": 48, "기타 컴퓨터": 49,
+  "신용(체크)카드": 50, "일반카드": 51, "교통카드": 52, "기타 카드": 53, "현금": 54,
+  "어음": 55, "상품권": 56, "채권": 57, "기타 유가증권": 58,
+  "삼성휴대폰": 59, "LG휴대폰": 60, "아이폰": 61, "기타 휴대폰": 62, "기타 통신기기": 63, "기타 물품": 64,
+};
+
+function normalizeSubName(sub) {
+  if (!sub) return "";
+  let s = String(sub).trim();
+  s = s.replace(/\(([^)]+)\)/g, " $1").replace(/\s+/g, " ").trim();
+  if (s === "기타물품") s = "기타 물품";
+  s = s.replace(/기타\s*귀금속/g, "기타 귀금속");
+  s = s.replace(/기타\s*서적/g, "기타 서적");
+  s = s.replace(/기타\s*서류/g, "기타 서류");
+  s = s.replace(/기타\s*악기/g, "기타 악기");
+  s = s.replace(/기타\s*의류/g, "기타 의류");
+  s = s.replace(/기타\s*자동차용품/g, "기타 자동차용품");
+  s = s.replace(/기타\s*전자기기/g, "기타 전자기기");
+  s = s.replace(/기타\s*지갑/g, "기타 지갑");
+  s = s.replace(/기타\s*증명서/g, "기타 증명서");
+  s = s.replace(/기타\s*컴퓨터/g, "기타 컴퓨터");
+  s = s.replace(/기타\s*카드/g, "기타 카드");
+  s = s.replace(/기타\s*유가증권/g, "기타 유가증권");
+  s = s.replace(/기타\s*휴대폰/g, "기타 휴대폰");
+  return s;
+}
+
+export default function KioskCapture() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addItem } = useContext(ItemContext);
+  const lockerNumber = location.state?.lockerNumber ?? 1;
 
-  // -----------------------------------------------------------
-  // 1. 이전 화면(입력 폼)에서 넘겨준 데이터 받기
-  // navigate('/kiosk/capture', { state: inputs }) 로 보낸 데이터를 여기서 받음
-  // -----------------------------------------------------------
-  const formData = location.state;
+  const [imageUrl, setImageUrl] = useState("");
+  const [capturing, setCapturing] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [ai, setAi] = useState(null);
+  const [aiErr, setAiErr] = useState("");
 
-  // [예외 처리] 데이터 없이 주소로 바로 들어왔을 경우 튕겨내기
-  useEffect(() => {
-    if (!formData) {
-      alert("잘못된 접근입니다.");
-      navigate('/kiosk');
+  const canNext = useMemo(() => !!imageUrl && !!ai && !analyzing, [imageUrl, ai, analyzing]);
+
+  const handleCapture = async () => {
+    if (capturing) return;
+    setCapturing(true);
+    setAi(null);
+    setAiErr("");
+
+    try {
+      const res = await hwCapture();
+      const full = hwImageUrl(res.image_url);
+      const busted = full.includes("?") ? `${full}&cb=${Date.now()}` : `${full}?cb=${Date.now()}`;
+      setImageUrl(busted);
+    } catch (e) {
+      alert(`촬영 실패: ${e.message}`);
+    } finally {
+      setCapturing(false);
     }
-  }, [formData, navigate]);
+  };
 
-  // -----------------------------------------------------------
-  // 2. 카메라 & 이미지 상태 관리
-  // videoRef: 실시간 카메라 화면을 보여줄 <video> 태그 연결
-  // canvasRef: 찰칵! 찍은 순간을 그릴 투명한 <canvas> 태그 연결
-  // -----------------------------------------------------------
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [imageFile, setImageFile] = useState(null);   // 서버로 보낼 실제 파일 객체
-  const [previewUrl, setPreviewUrl] = useState(null); // 화면에 보여줄 미리보기 URL
+  const handleAnalyze = async () => {
+    if (!imageUrl || analyzing) return;
+    setAnalyzing(true);
+    setAi(null);
+    setAiErr("");
 
-  // -----------------------------------------------------------
-  // 3. 카메라 실행 (컴포넌트가 켜지면 자동 실행)
-  // -----------------------------------------------------------
-  useEffect(() => {
-    const startCamera = async () => {
-      try {
-        // 브라우저에게 카메라 권한 요청
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        // <video> 태그에 카메라 스트림 연결
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      } catch (err) {
-        console.error("카메라 오류:", err);
-      }
-    };
+    try {
+      const res = await hwAnalyze();
+      const normalizedSub = normalizeSubName(res.sub_name);
+      const categoryId = SUB_TO_CATEGORY_ID[normalizedSub] || 64;
 
-    // 이미 찍은 사진이 없을 때만 카메라 켜기
-    if (!previewUrl) startCamera();
+      setAi({
+        major_name: res.major_name || "",
+        sub_name: normalizedSub || "",
+        category_id: categoryId,
+        item_name: res.item_name || res.title || "",
+        description: res.description || res.desc || "",
+        raw: res.raw,
+        model: res.model,
+      });
+    } catch (e) {
+      setAiErr(e.message || "AI 분석 실패");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
-    // [청소] 화면을 나갈 때 카메라 끄기 (메모리 누수 방지)
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
-      }
-    };
-  }, [previewUrl]);
-
-  // -----------------------------------------------------------
-  // 4. [촬영 기능] 비디오 화면 -> 캔버스 -> 이미지 파일 변환
-  // -----------------------------------------------------------
-  const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-    
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-
-    // 캔버스 크기를 비디오 크기에 맞춤
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    // 현재 비디오 화면을 캔버스에 '그림' (캡처 효과)
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    
-    // 그린 그림을 파일(Blob) 형태로 변환
-    canvas.toBlob(blob => {
-      const file = new File([blob], "capture.png", { type: "image/png" });
-      setImageFile(file); // 전송용 파일 저장
-      setPreviewUrl(URL.createObjectURL(file)); // 미리보기용 URL 생성
+  const goRegister = () => {
+    if (!canNext) return;
+    navigate("/kiosk/register", {
+      state: { lockerNumber, imageUrl, ai },
     });
   };
 
-  // 다시 찍기 (파일 초기화 후 카메라 재시작)
-  const retakePhoto = () => {
-    setPreviewUrl(null);
-    setImageFile(null);
-  };
-
-  // -----------------------------------------------------------
-  // 5. [최종 등록] 텍스트 정보 + 이미지 파일 서버 전송
-  // -----------------------------------------------------------
-  const handleImageRegister = async () => {
-    if (!imageFile) return alert("사진을 촬영해주세요!");
-
-    // (선택사항) 설명란에 회원 ID 정보를 덧붙임
-    let finalDesc = formData.desc;
-    if (formData.userId) finalDesc += `\n(습득자 ID: ${formData.userId})`;
-    
-    // Context의 addItem 함수 호출 (서버 통신)
-    const success = await addItem({ ...formData, desc: finalDesc }, imageFile);
-    
-    if (success) { 
-        // 성공 시 '보관함 열림(Locker)' 화면으로 이동
-        // 이때도 입력했던 정보와 방금 찍은 사진을 넘겨줌 (확인 화면용)
-        navigate('/kiosk/locker', { 
-            state: { ...formData, imageUrl: previewUrl } 
-        }); 
-    }
-  };
-
-  // 데이터 로딩 전에는 아무것도 안 보여줌 (에러 방지)
-  if (!formData) return null;
-
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'black' }}>
-      
-      {/* 상단 헤더 (뒤로가기) */}
-      <div style={{ padding: '10px 15px', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', height: 50, position:'absolute', top:0, left:0, right:0, zIndex:10 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-          <ArrowLeft size={24} color="white" />
+    <div className="capture-container">
+      {/* 상단 헤더 */}
+      <header className="capture-header">
+        <button onClick={() => navigate(-1)} className="back-btn">
+          <ArrowLeft size={24} />
+          <span>뒤로</span>
         </button>
-        <h1 style={{ marginLeft: 10, fontSize: 18, color:'white', margin:'0 0 0 10px' }}>이미지 촬영 (2/2)</h1>
-      </div>
+        <h2 className="header-title">분실물 촬영 및 분석</h2>
+        {/* ★ 우측 상단 보관함 버튼(Badge) 영역 삭제 완료 ★ */}
+      </header>
 
-      {/* 카메라 뷰파인더 영역 */}
-      <div style={{ flex: 1, position: 'relative', display:'flex', justifyContent:'center', alignItems:'center', overflow:'hidden' }}>
-        
-        {/* 상태에 따라 비디오(라이브) 또는 이미지(캡처본) 보여주기 */}
-        {!previewUrl ? (
-          <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
-          <img src={previewUrl} alt="Capture" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        )}
-        
-        {/* 캡처를 위해 존재하지만 눈에는 안 보이는 캔버스 */}
-        <canvas ref={canvasRef} style={{ display: 'none' }} />
-        
-        {/* 하단 컨트롤 버튼 영역 */}
-        <div style={{ position: 'absolute', bottom: 20, display:'flex', justifyContent:'center', gap: 20, width:'100%' }}>
-          
-          {/* 촬영 or 다시찍기 버튼 토글 */}
-          <button 
-            onClick={previewUrl ? retakePhoto : capturePhoto}
-            style={{ 
-              width: 70, height: 70, borderRadius: '50%', background: previewUrl ? '#fff' : 'white', 
-              border: previewUrl ? 'none' : '5px solid #ccc', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer'
-            }}
-          >
-            {previewUrl ? <RefreshCw size={30} color="#555"/> : <Camera size={40} color="#333"/>}
-          </button>
-
-          {/* 등록 버튼 (사진이 있을 때만 등장) */}
-          {previewUrl && (
-             <button 
-             onClick={handleImageRegister}
-             style={{ 
-               height: 70, padding: '0 30px', borderRadius: 35, 
-               background: '#2ecc71', border: 'none', color:'white', fontSize: 20, fontWeight:'bold', 
-               display:'flex', alignItems:'center', gap:10, cursor:'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-             }}
-           >
-             <Check size={30} /> 이미지 등록
-           </button>
+      {/* 좌우 분할 메인 영역 */}
+      <main className="capture-main">
+        <section className="camera-section">
+          {imageUrl ? (
+            <img src={imageUrl} alt="capture" className="camera-img" />
+          ) : (
+            <div className="camera-placeholder">
+              <Camera size={48} strokeWidth={1.5} />
+              <p>우측의 <b>촬영 버튼</b>을 눌러<br/>물건을 촬영해주세요.</p>
+            </div>
           )}
-        </div>
-      </div>
+        </section>
+
+        <section className="control-section">
+          <div className="btn-group">
+            <button
+              onClick={handleCapture}
+              disabled={capturing}
+              className={`action-btn btn-capture ${capturing ? 'disabled' : ''}`}
+            >
+              {imageUrl ? <RefreshCw size={20} /> : <Camera size={20} />}
+              {imageUrl ? "다시 촬영" : "촬영하기"}
+            </button>
+
+            <button
+              onClick={handleAnalyze}
+              disabled={!imageUrl || analyzing}
+              className={`action-btn btn-analyze ${(!imageUrl || analyzing) ? 'disabled' : ''}`}
+            >
+              <Sparkles size={20} />
+              {analyzing ? "분석 중..." : "AI 분석"}
+            </button>
+          </div>
+
+          {aiErr && (
+            <div className="ai-result error">
+              <AlertTriangle size={18} />
+              <div>
+                <strong>분석 실패</strong>
+                <p>{aiErr}</p>
+              </div>
+            </div>
+          )}
+
+          {ai && (
+            <div className="ai-result success">
+              <div className="ai-result-header">
+                <CheckCircle2 size={16} />
+                <span>AI 분석 완료</span>
+              </div>
+              
+              <div className="ai-data-grid">
+                <span className="ai-label">추정 물품</span>
+                <span className="ai-value highlight">{ai.item_name || "-"}</span>
+                
+                <span className="ai-label">분류</span>
+                <span className="ai-value">{ai.major_name} {">"} {ai.sub_name}</span>
+              </div>
+
+              <div className="ai-desc">
+                {ai.description || "-"}
+              </div>
+            </div>
+          )}
+
+          {!ai && !aiErr && (
+            <div className="empty-guide">
+              사진 촬영 후 AI 분석을 진행하면<br/>여기에 결과가 표시됩니다.
+            </div>
+          )}
+
+          <button
+            onClick={goRegister}
+            disabled={!canNext}
+            className={`next-btn ${canNext ? 'active' : ''}`}
+          >
+            다음 단계로 →
+          </button>
+        </section>
+      </main>
     </div>
   );
-};
-
-export default KioskCapture;
+}
