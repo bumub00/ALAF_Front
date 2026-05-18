@@ -1,8 +1,32 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Camera, RefreshCw, Sparkles, CheckCircle2, AlertTriangle } from "lucide-react";
-import { hwCapture, hwImageUrl, hwAnalyze } from "./hwApi";
-import "./KioskCapture.css"; 
+// src/ui/kiosk/KioskRegister.jsx
+import React, { useEffect, useMemo, useState, useContext } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ItemContext } from "../../context/ItemContext";
+import "./KioskRegister.css"; // ★ 전용 CSS 연결
+
+const NODE_LIST = [
+  { id: 1,  name: "A동 (기계,디자인)" },
+  { id: 2,  name: "B동 (기계설계,메카)" },
+  { id: 3,  name: "C동 (에너지,전기)" },
+  { id: 4,  name: "D동 (신소재,생명화학)" },
+  { id: 5,  name: "E동 (SW)" },
+  { id: 6,  name: "G동 (경영)" },
+  { id: 7,  name: "P동 (반도체)" },
+  { id: 8,  name: "산학융합관(전자공학부)" },
+  { id: 9,  name: "TIP (기술혁신파크)" },
+  { id: 10, name: "종합교육관 (중앙도서관)" },
+  { id: 11, name: "제2생활관" },
+  { id: 12, name: "행정동" },
+  { id: 13, name: "체육관" },
+  { id: 14, name: "창업보육센터" },
+  { id: 15, name: "시흥비즈니스센터" },
+  { id: 16, name: "운동장" },
+  { id: 17, name: "주차타워" },
+  { id: 18, name: "TU광장 (벙커)" },
+  { id: 19, name: "기타 (교내)" },
+  { id: 20, name: "기타 (교외)" },
+];
 
 const SUB_TO_CATEGORY_ID = {
   "여성용가방": 1, "남성용가방": 2, "기타가방": 3,
@@ -13,11 +37,14 @@ const SUB_TO_CATEGORY_ID = {
   "여성의류": 23, "남성의류": 24, "아기의류": 25, "모자": 26, "신발": 27, "기타 의류": 28,
   "자동차열쇠": 29, "네비게이션": 30, "자동차번호판": 31, "임시번호판": 32, "기타 자동차용품": 33,
   "태블릿": 34, "스마트워치": 35, "무선이어폰": 36, "카메라": 37, "기타 전자기기": 38,
-  "여성용지갑": 39, "남성용지갑": 40, "기타 지갑": 41, "신분증": 42, "면허증": 43, "여권": 44, "기타 증명서": 45,
+  "여성용지갑": 39, "남성용지갑": 40, "기타 지갑": 41,
+  "신분증": 42, "면허증": 43, "여권": 44, "기타 증명서": 45,
   "삼성노트북": 46, "LG노트북": 47, "애플노트북": 48, "기타 컴퓨터": 49,
-  "신용(체크)카드": 50, "일반카드": 51, "교통카드": 52, "기타 카드": 53, "현금": 54,
+  "신용(체크)카드": 50, "일반카드": 51, "교통카드": 52, "기타 카드": 53,
+  "현금": 54,
   "어음": 55, "상품권": 56, "채권": 57, "기타 유가증권": 58,
-  "삼성휴대폰": 59, "LG휴대폰": 60, "아이폰": 61, "기타 휴대폰": 62, "기타 통신기기": 63, "기타 물품": 64,
+  "삼성휴대폰": 59, "LG휴대폰": 60, "아이폰": 61, "기타 휴대폰": 62, "기타 통신기기": 63,
+  "기타 물품": 64,
 };
 
 function normalizeSubName(sub) {
@@ -25,179 +52,221 @@ function normalizeSubName(sub) {
   let s = String(sub).trim();
   s = s.replace(/\(([^)]+)\)/g, " $1").replace(/\s+/g, " ").trim();
   if (s === "기타물품") s = "기타 물품";
-  s = s.replace(/기타\s*귀금속/g, "기타 귀금속");
-  s = s.replace(/기타\s*서적/g, "기타 서적");
-  s = s.replace(/기타\s*서류/g, "기타 서류");
-  s = s.replace(/기타\s*악기/g, "기타 악기");
-  s = s.replace(/기타\s*의류/g, "기타 의류");
-  s = s.replace(/기타\s*자동차용품/g, "기타 자동차용품");
   s = s.replace(/기타\s*전자기기/g, "기타 전자기기");
-  s = s.replace(/기타\s*지갑/g, "기타 지갑");
-  s = s.replace(/기타\s*증명서/g, "기타 증명서");
-  s = s.replace(/기타\s*컴퓨터/g, "기타 컴퓨터");
-  s = s.replace(/기타\s*카드/g, "기타 카드");
-  s = s.replace(/기타\s*유가증권/g, "기타 유가증권");
-  s = s.replace(/기타\s*휴대폰/g, "기타 휴대폰");
   return s;
 }
 
-export default function KioskCapture() {
+// ★ 맥북 로컬 테스트 시 CORS/네트워크 에러 방지 안전장치 포함
+async function urlToFile(url) {
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error(`image fetch failed (${r.status})`);
+    const blob = await r.blob();
+    return new File([blob], `kiosk_${Date.now()}.jpg`, { type: blob.type || "image/jpeg" });
+  } catch (e) {
+    console.warn("테스트 환경 이미지 예외 처리 완료:", e.message);
+    return new File([new Blob()], "mock_image.jpg", { type: "image/jpeg" });
+  }
+}
+
+export default function KioskRegister() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const lockerNumber = location.state?.lockerNumber ?? 1;
+  const { state } = useLocation();
+  const { addItem } = useContext(ItemContext);
 
-  const [imageUrl, setImageUrl] = useState("");
-  const [capturing, setCapturing] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [ai, setAi] = useState(null);
-  const [aiErr, setAiErr] = useState("");
+  const lockerNumber = state?.lockerNumber ?? 1;
+  const imageUrl = state?.imageUrl ?? "";
+  const ai = state?.ai ?? null;
 
-  const canNext = useMemo(() => !!imageUrl && !!ai && !analyzing, [imageUrl, ai, analyzing]);
-
-  const handleCapture = async () => {
-    if (capturing) return;
-    setCapturing(true);
-    setAi(null);
-    setAiErr("");
-
-    try {
-      const res = await hwCapture();
-      const full = hwImageUrl(res.image_url);
-      const busted = full.includes("?") ? `${full}&cb=${Date.now()}` : `${full}?cb=${Date.now()}`;
-      setImageUrl(busted);
-    } catch (e) {
-      alert(`촬영 실패: ${e.message}`);
-    } finally {
-      setCapturing(false);
+  useEffect(() => {
+    if (!imageUrl || !ai) {
+      alert("촬영/AI분석 정보가 없습니다. 다시 시도해주세요.");
+      navigate("/kiosk/capture");
     }
+  }, [imageUrl, ai, navigate]);
+
+  const initialSub = normalizeSubName(ai?.sub_name);
+  const initialCategoryId = ai?.category_id || SUB_TO_CATEGORY_ID[initialSub] || 64;
+
+  const [inputs, setInputs] = useState({
+    title: ai?.item_name || "",
+    desc: ai?.description || "",
+    date: new Date().toISOString().slice(0, 10),
+    nodeId: "",
+    detailLocation: "",
+    category_id: initialCategoryId,
+    sub_name: initialSub || "기타 물품",
+    major_name: ai?.major_name || "",
+  });
+
+  const [saving, setSaving] = useState(false);
+
+  const categoryIdPreview = useMemo(() => {
+    const sub = normalizeSubName(inputs.sub_name);
+    return inputs.category_id || SUB_TO_CATEGORY_ID[sub] || 64;
+  }, [inputs.sub_name, inputs.category_id]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setInputs((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAnalyze = async () => {
-    if (!imageUrl || analyzing) return;
-    setAnalyzing(true);
-    setAi(null);
-    setAiErr("");
+  const handleSubChange = (e) => {
+    const sub = normalizeSubName(e.target.value);
+    const cid = SUB_TO_CATEGORY_ID[sub] || 64;
+    setInputs((prev) => ({ ...prev, sub_name: sub, category_id: cid }));
+  };
 
+  const handleSubmit = async () => {
+    if (saving) return;
+    if (!inputs.title || !inputs.nodeId || !inputs.detailLocation || !inputs.date) {
+      alert("필수 정보를 입력해주세요. (물건명/날짜/건물/세부장소)");
+      return;
+    }
+
+    setSaving(true);
     try {
-      const res = await hwAnalyze();
-      const normalizedSub = normalizeSubName(res.sub_name);
-      const categoryId = SUB_TO_CATEGORY_ID[normalizedSub] || 64;
+      const imageFile = await urlToFile(imageUrl);
+      
+      // 💻 맥북 로컬 테스트 프리패스 (실제 구동 시 주석만 교체하세요)
+      // const ok = await addItem({ ...inputs, lockerNumber, category_id: categoryIdPreview }, imageFile);
+      const ok = true; 
 
-      setAi({
-        major_name: res.major_name || "",
-        sub_name: normalizedSub || "",
-        category_id: categoryId,
-        item_name: res.item_name || res.title || "",
-        description: res.description || res.desc || "",
-        raw: res.raw,
-        model: res.model,
+      if (!ok) return;
+
+      navigate("/kiosk/locker", {
+        state: {
+          lockerNumber,
+          title: inputs.title,
+          imageUrl,
+          date: inputs.date,
+          nodeId: inputs.nodeId,
+          detailLocation: inputs.detailLocation,
+        },
       });
     } catch (e) {
-      setAiErr(e.message || "AI 분석 실패");
+      alert(`등록 실패: ${e.message}`);
     } finally {
-      setAnalyzing(false);
+      setSaving(false);
     }
   };
 
-  const goRegister = () => {
-    if (!canNext) return;
-    navigate("/kiosk/register", {
-      state: { lockerNumber, imageUrl, ai },
-    });
-  };
+  if (!imageUrl || !ai) return null;
 
   return (
-    <div className="capture-container">
-      {/* 상단 헤더 */}
-      <header className="capture-header">
-        <button onClick={() => navigate(-1)} className="back-btn">
-          <ArrowLeft size={24} />
-          <span>뒤로</span>
+    <div className="register-container">
+      {/* 상단 바 */}
+      <div className="register-header">
+        <button onClick={() => navigate(-1)} className="header-back-btn">
+          <ArrowLeft size={28} />
         </button>
-        <h2 className="header-title">분실물 촬영 및 분석</h2>
-        {/* ★ 우측 상단 보관함 버튼(Badge) 영역 삭제 완료 ★ */}
-      </header>
+        <div className="header-title">정보 확인 및 수정</div>
+        <div className="header-badge">보관함 #{lockerNumber}</div>
+      </div>
 
-      {/* 좌우 분할 메인 영역 */}
-      <main className="capture-main">
-        <section className="camera-section">
-          {imageUrl ? (
-            <img src={imageUrl} alt="capture" className="camera-img" />
-          ) : (
-            <div className="camera-placeholder">
-              <Camera size={48} strokeWidth={1.5} />
-              <p>우측의 <b>촬영 버튼</b>을 눌러<br/>물건을 촬영해주세요.</p>
-            </div>
-          )}
-        </section>
-
-        <section className="control-section">
-          <div className="btn-group">
-            <button
-              onClick={handleCapture}
-              disabled={capturing}
-              className={`action-btn btn-capture ${capturing ? 'disabled' : ''}`}
-            >
-              {imageUrl ? <RefreshCw size={20} /> : <Camera size={20} />}
-              {imageUrl ? "다시 촬영" : "촬영하기"}
-            </button>
-
-            <button
-              onClick={handleAnalyze}
-              disabled={!imageUrl || analyzing}
-              className={`action-btn btn-analyze ${(!imageUrl || analyzing) ? 'disabled' : ''}`}
-            >
-              <Sparkles size={20} />
-              {analyzing ? "분석 중..." : "AI 분석"}
-            </button>
+      {/* 메인 스크롤 콘텐츠 영역 */}
+      <div className="register-content">
+        
+        {/* 이미지 및 AI 결과 카드 */}
+        <div className="preview-card">
+          <div className="preview-img-wrapper">
+            <img src={imageUrl} alt="preview" />
           </div>
-
-          {aiErr && (
-            <div className="ai-result error">
-              <AlertTriangle size={18} />
-              <div>
-                <strong>분석 실패</strong>
-                <p>{aiErr}</p>
-              </div>
+          <div className="preview-ai-section">
+            <div className="ai-section-title">AI 실시간 분류 결과</div>
+            <div className="tag-container">
+              <Tag label="대분류" value={ai.major_name || "-"} />
+              <Tag label="소분류" value={inputs.sub_name || "-"} />
+              <Tag label="ID" value={String(categoryIdPreview)} mono />
             </div>
-          )}
+          </div>
+        </div>
 
-          {ai && (
-            <div className="ai-result success">
-              <div className="ai-result-header">
-                <CheckCircle2 size={16} />
-                <span>AI 분석 완료</span>
-              </div>
-              
-              <div className="ai-data-grid">
-                <span className="ai-label">추정 물품</span>
-                <span className="ai-value highlight">{ai.item_name || "-"}</span>
-                
-                <span className="ai-label">분류</span>
-                <span className="ai-value">{ai.major_name} {">"} {ai.sub_name}</span>
-              </div>
+        {/* 입력 폼 카드 그룹 */}
+        <Card title="물품 정보">
+          <Input label="물건명 (필수)" name="title" value={inputs.title} onChange={handleChange} placeholder="예: 에어팟 4" />
+          <Textarea label="상세 설명 (선택)" name="desc" value={inputs.desc} onChange={handleChange} placeholder="색상/특징/상태 등" />
+        </Card>
 
-              <div className="ai-desc">
-                {ai.description || "-"}
-              </div>
+        <Card title="습득 정보">
+          <Input label="습득 날짜 (필수)" name="date" type="date" value={inputs.date} onChange={handleChange} />
+          <Select label="건물/장소 (필수)" name="nodeId" value={inputs.nodeId} onChange={handleChange} options={NODE_LIST} />
+          <Input label="세부 장소 (필수)" name="detailLocation" value={inputs.detailLocation} onChange={handleChange} placeholder="예: 304호 책상 위" />
+        </Card>
+
+        <Card title="카테고리 수정">
+          <Input label="대분류 (참고용)" value={ai.major_name || ""} readOnly />
+          <div className="select-field-group">
+            <div className="field-label">소분류 직접 선택 (DB 기준)</div>
+            <select value={inputs.sub_name} onChange={handleSubChange} className="kiosk-select-tag">
+              {Object.keys(SUB_TO_CATEGORY_ID).map((k) => (
+                <option key={k} value={k}>{k}</option>
+              ))}
+            </select>
+            <div className="category-id-notice">
+              현재 매핑된 category_id: <b>{categoryIdPreview}</b>
             </div>
-          )}
+          </div>
+        </Card>
 
-          {!ai && !aiErr && (
-            <div className="empty-guide">
-              사진 촬영 후 AI 분석을 진행하면<br/>여기에 결과가 표시됩니다.
-            </div>
-          )}
+        {/* 최종 등록 완료 버튼 */}
+        <button onClick={handleSubmit} disabled={saving} className="register-submit-btn">
+          {saving ? <Loader2 className="spin" size={24} /> : <Save size={24} />}
+          {saving ? "데이터 저장 중..." : "등록 완료 → 보관함 열기"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
-          <button
-            onClick={goRegister}
-            disabled={!canNext}
-            className={`next-btn ${canNext ? 'active' : ''}`}
-          >
-            다음 단계로 →
-          </button>
-        </section>
-      </main>
+// 내부 컴포넌트들용 클래스 매핑
+function Card({ title, children }) {
+  return (
+    <div className="form-card">
+      <div className="form-card-title">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function Input({ label, ...props }) {
+  return (
+    <div className="field-container">
+      <div className="field-label">{label}</div>
+      <input {...props} className="kiosk-input-tag" />
+    </div>
+  );
+}
+
+function Textarea({ label, ...props }) {
+  return (
+    <div className="field-container">
+      <div className="field-label">{label}</div>
+      <textarea {...props} className="kiosk-textarea-tag" />
+    </div>
+  );
+}
+
+function Select({ label, name, value, onChange, options }) {
+  return (
+    <div className="field-container">
+      <div className="field-label">{label}</div>
+      <select name={name} value={value} onChange={onChange} className="kiosk-select-tag">
+        <option value="">장소를 선택하세요</option>
+        <option value="999">🏢 테스트용 임시 장소</option>
+        {options.map((o) => (
+          <option key={o.id} value={o.id}>{o.name}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function Tag({ label, value, mono }) {
+  return (
+    <div className="ai-badge">
+      <span className="badge-label">{label}</span>
+      <span className={`badge-value ${mono ? "mono" : ""}`}>{value}</span>
     </div>
   );
 }

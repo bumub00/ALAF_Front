@@ -93,7 +93,7 @@ function App() {
                 <Route path="/kiosk/locker" element={<KioskLocker />} />     
                 <Route path="/kiosk/confirm" element={<KioskConfirm />} /> 
                 <Route path="/kiosk/login" element={<KioskLogin />} />       
-                <Route path="/kiosk/recovery-List" element={<KioskRecoveryList />} /> 
+                <Route path="/kiosk/recovery-list" element={<KioskRecoveryList />} /> 
                 <Route path="/kiosk/retrieval-locker" element={<KioskRetrievalLocker />} />
               </Routes>
             </BrowserRouter>
